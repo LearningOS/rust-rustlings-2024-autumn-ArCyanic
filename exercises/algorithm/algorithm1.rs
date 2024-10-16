@@ -22,6 +22,15 @@ impl<T> Node<T> {
         }
     }
 }
+
+pub fn get_val<T>(wrapper: &Option<NonNull<Node<T>>>) -> &T {
+    unsafe { &(*(wrapper.unwrap().as_ptr()).val) }
+}
+
+pub fn get_next<T>(wrapper: &Option<NonNull<Node<T>>>) -> &Option<NonNull<Node<T>>> {
+    unsafe { &(*(wrapper.unwrap().as_ptr())).next }
+}
+
 #[derive(Debug)]
 struct LinkedList<T> {
     length: u32,
@@ -69,14 +78,44 @@ impl<T> LinkedList<T> {
             },
         }
     }
+
 	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
 	{
-		//TODO
-		Self {
+        let mut result: LinkedList<T> = Self {
             length: 0,
             start: None,
             end: None,
+        };
+
+        let mut curr_a: &Option<NonNull<Node<T>>> = &list_a.start;
+        let mut curr_b = &list_b.start;
+        let mut val_a;
+        let mut val_b; 
+        while curr_a != None && curr_b != None {
+            val_a = get_val(&curr_a);
+            val_b = get_val(&curr_b);
+            while curr_a != None && val_a <= val_b {
+                result.add(val_a.clone());
+                val_b = get_val(&curr_a);
+                curr_a = get_next(curr_a);
+            }
+            while curr_b != None && val_b <= val_a {
+                result.add(val_b.clone());
+                val_b = get_val(&curr_b);
+                curr_b = get_next(curr_b);
+            }
         }
+
+        while curr_a != None {
+            result.add(get_val(curr_a).clone());
+            curr_a = get_next(curr_a);
+        }
+        while curr_b != None {
+            result.add(get_val(curr_b).clone());
+            curr_b = get_next(curr_b);
+        }
+
+        result 
 	}
 }
 
