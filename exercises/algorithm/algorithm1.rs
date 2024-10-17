@@ -6,7 +6,7 @@
 
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
-use std::vec::*;
+use std::{result, vec::*};
 
 #[derive(Debug)]
 struct Node<T> {
@@ -24,11 +24,11 @@ impl<T> Node<T> {
 }
 
 pub fn get_val<T>(wrapper: &Option<NonNull<Node<T>>>) -> &T {
-    unsafe { &(*(wrapper.unwrap().as_ptr()).val) }
+    unsafe { &((*wrapper.unwrap().as_ptr()).val) }
 }
 
 pub fn get_next<T>(wrapper: &Option<NonNull<Node<T>>>) -> &Option<NonNull<Node<T>>> {
-    unsafe { &(*(wrapper.unwrap().as_ptr())).next }
+    unsafe { &((*wrapper.unwrap().as_ptr())).next }
 }
 
 #[derive(Debug)]
@@ -80,6 +80,8 @@ impl<T> LinkedList<T> {
     }
 
 	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
+    where
+        T: PartialOrd + Clone,
 	{
         let mut result: LinkedList<T> = Self {
             length: 0,
@@ -91,26 +93,36 @@ impl<T> LinkedList<T> {
         let mut curr_b = &list_b.start;
         let mut val_a;
         let mut val_b; 
-        while curr_a != None && curr_b != None {
-            val_a = get_val(&curr_a);
+        while *curr_a != None && *curr_b != None {
+            val_a = get_val(curr_a);
             val_b = get_val(&curr_b);
-            while curr_a != None && val_a <= val_b {
-                result.add(val_a.clone());
-                val_b = get_val(&curr_a);
-                curr_a = get_next(curr_a);
+            while curr_a.is_some() {
+                val_a = get_val(curr_a);
+                if val_a <= val_b {
+                    result.add(val_a.clone());
+                    curr_a = get_next(curr_a);
+                } else {
+                    break;
+                }
             }
-            while curr_b != None && val_b <= val_a {
-                result.add(val_b.clone());
-                val_b = get_val(&curr_b);
-                curr_b = get_next(curr_b);
+            if curr_a.is_none() { break; }
+
+            while curr_b.is_some() {
+                val_b = get_val(curr_b);
+                if val_b <= val_a {
+                    result.add(val_b.clone());
+                    curr_b = get_next(curr_b);
+                } else {
+                    break;
+                }
             }
         }
 
-        while curr_a != None {
+        while *curr_a != None {
             result.add(get_val(curr_a).clone());
             curr_a = get_next(curr_a);
         }
-        while curr_b != None {
+        while *curr_b != None {
             result.add(get_val(curr_b).clone());
             curr_b = get_next(curr_b);
         }
