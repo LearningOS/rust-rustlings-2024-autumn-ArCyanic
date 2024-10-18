@@ -2,14 +2,14 @@
 	heap
 	This question requires you to implement a binary heap function
 */
-// I AM NOT DONE
 
 use std::cmp::Ord;
 use std::default::Default;
+use std::fmt::Display;
 
 pub struct Heap<T>
 where
-    T: Default,
+    T: Default 
 {
     count: usize,
     items: Vec<T>,
@@ -37,7 +37,18 @@ where
     }
 
     pub fn add(&mut self, value: T) {
-        //TODO
+        // TODO:
+        self.items.push(value);
+        self.count += 1;
+        let mut curr_idx = self.count;
+        let mut parent_idx = self.parent_idx(curr_idx);
+        while parent_idx > 0 && 
+              (self.comparator)(&self.items[curr_idx], &self.items[parent_idx])
+        {
+            self.items.swap(curr_idx, parent_idx);
+            curr_idx = parent_idx;
+            parent_idx = self.parent_idx(parent_idx);
+        }
     }
 
     fn parent_idx(&self, idx: usize) -> usize {
@@ -57,8 +68,17 @@ where
     }
 
     fn smallest_child_idx(&self, idx: usize) -> usize {
-        //TODO
-		0
+        // TODO:
+        let l = self.left_child_idx(idx);
+        let r = self.right_child_idx(idx);
+
+        if r > self.count {
+            l 
+        } else if (self.comparator)(&self.items[l], &self.items[r]) {
+            l 
+        } else {
+            r
+        }
     }
 }
 
@@ -79,13 +99,30 @@ where
 
 impl<T> Iterator for Heap<T>
 where
-    T: Default,
+    T: Default + Copy
 {
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
-        //TODO
-		None
+        // TODO:
+        if self.count == 0 {
+            return None;
+        }
+
+        self.items.swap(1, self.count);
+        let result = self.items.pop();
+        self.count -= 1;
+
+        let mut curr_idx = self.smallest_child_idx(1);
+        let mut parent_idx = 1;
+        while curr_idx <= self.count &&
+              (self.comparator)(&self.items[curr_idx], &self.items[parent_idx])
+        {
+            self.items.swap(curr_idx, parent_idx);
+            curr_idx = self.smallest_child_idx(curr_idx);
+            parent_idx = self.parent_idx(curr_idx);
+        }
+        result
     }
 }
 

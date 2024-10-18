@@ -2,7 +2,6 @@
 	queue
 	This question requires you to use queues to implement the functionality of the stac
 */
-// I AM NOT DONE
 
 #[derive(Debug)]
 pub struct Queue<T> {
@@ -54,28 +53,59 @@ impl<T> Default for Queue<T> {
 
 pub struct myStack<T>
 {
-	//TODO
 	q1:Queue<T>,
-	q2:Queue<T>
+	q2:Queue<T>,
+    indicator: bool
 }
 impl<T> myStack<T> {
     pub fn new() -> Self {
         Self {
 			//TODO
 			q1:Queue::<T>::new(),
-			q2:Queue::<T>::new()
+			q2:Queue::<T>::new(),
+            indicator: false
         }
     }
+
+    fn get_queue_pair(&mut self) -> (&mut Queue<T>, &mut Queue<T>, &mut bool) {
+        if self.indicator {
+            (&mut self.q1, &mut self.q2, &mut self.indicator)
+        } else {
+            (&mut self.q2, &mut self.q1, &mut self.indicator)
+        }
+    }
+
     pub fn push(&mut self, elem: T) {
-        //TODO
+        if self.indicator {
+            self.q1.enqueue(elem);
+        } else {
+            self.q2.enqueue(elem);
+        }
     }
     pub fn pop(&mut self) -> Result<T, &str> {
-        //TODO
-		Err("Stack is empty")
+        let (active_queue, backup_queue) = if self.indicator {
+            (&mut self.q1, &mut self.q2)
+        } else {
+            (&mut self.q2, &mut self.q1)
+        };
+        let n_active = active_queue.size();
+
+        if n_active == 0 {
+            return Err("Stack is empty");
+        }
+
+        for _ in 0..n_active - 1 {
+            backup_queue.enqueue(active_queue.dequeue().unwrap());
+        }
+
+        let result = active_queue.dequeue();
+        self.indicator = !self.indicator;
+
+        result
     }
+
     pub fn is_empty(&self) -> bool {
-		//TODO
-        true
+        self.q1.size() + self.q2.size() == 0
     }
 }
 

@@ -2,10 +2,10 @@
 	graph
 	This problem requires you to implement a basic graph functio
 */
-// I AM NOT DONE
 
 use std::collections::{HashMap, HashSet};
 use std::fmt;
+use std::str::FromStr;
 #[derive(Debug, Clone)]
 pub struct NodeNotInGraph;
 impl fmt::Display for NodeNotInGraph {
@@ -28,9 +28,9 @@ impl Graph for UndirectedGraph {
     fn adjacency_table(&self) -> &HashMap<String, Vec<(String, i32)>> {
         &self.adjacency_table
     }
-    fn add_edge(&mut self, edge: (&str, &str, i32)) {
-        //TODO
-    }
+    // fn add_edge(&mut self, edge: (&str, &str, i32)) {
+    //
+    // }
 }
 pub trait Graph {
     fn new() -> Self;
@@ -38,10 +38,23 @@ pub trait Graph {
     fn adjacency_table(&self) -> &HashMap<String, Vec<(String, i32)>>;
     fn add_node(&mut self, node: &str) -> bool {
         //TODO
-		true
+        if self.adjacency_table().contains_key(node) {
+            return false;
+        }
+
+        self.adjacency_table_mutable().insert(node.to_string(), Vec::new());
+        true
     }
     fn add_edge(&mut self, edge: (&str, &str, i32)) {
         //TODO
+        let (n1, n2, distance) = edge;
+
+        self.add_node(n1);
+        self.add_node(n2);
+
+        let table = self.adjacency_table_mutable();
+        table.get_mut(n1).unwrap().push((n2.to_string(), distance));
+        table.get_mut(n2).unwrap().push((n1.to_string(), distance));
     }
     fn contains(&self, node: &str) -> bool {
         self.adjacency_table().get(node).is_some()
